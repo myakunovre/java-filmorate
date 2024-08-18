@@ -113,7 +113,7 @@ public class UserController {
     private static void nullValidateBody(User user) {
         if (user == null) {
             log.warn("Request has not contain a body of User-class");
-            throw new NotFoundException("Метод PUT должен передавать объект класса User");
+            throw new NullPointerException("Метод PUT должен передавать объект класса User");
         }
     }
 

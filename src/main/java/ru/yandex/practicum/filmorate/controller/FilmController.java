@@ -96,7 +96,7 @@ public class FilmController {
     private static void nullValidateBody(Film film) {
         if (film == null) {
             log.warn("Request has not contain a body of Film-class");
-            throw new NotFoundException("Метод PUT должен передавать объект класса Film");
+            throw new NullPointerException("Метод PUT должен передавать объект класса Film");
         }
     }
 
