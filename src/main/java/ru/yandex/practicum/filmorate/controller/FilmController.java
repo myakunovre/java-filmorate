@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -25,7 +24,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film add(@RequestBody Film film) {
+    public Film create(@RequestBody Film film) {
         log.info("Starting a new film add!");
 
         nullValidateBody(film);
@@ -55,33 +54,27 @@ public class FilmController {
             log.warn("Received Film object for updating without id");
             throw new ValidationException("Id должен быть указан");
         }
-        if (films.containsKey(newFilm.getId())) {
-            log.trace("Received Film object with correct id");
 
-            generalFilmValidate(newFilm);
-            log.trace("Completed Film object validation for update");
+        generalFilmValidate(newFilm);
+        log.trace("Completed Film object validation for update");
 
-            Film oldFilm = films.get(newFilm.getId());
-            log.trace("Received Film object for update");
+        Film oldFilm = films.get(newFilm.getId());
+        log.trace("Received Film object for update");
 
-            oldFilm.setName(newFilm.getName());
-            log.trace("Updated film name");
+        oldFilm.setName(newFilm.getName());
+        log.trace("Updated film name");
 
-            oldFilm.setDescription(newFilm.getDescription());
-            log.trace("Updated film description");
+        oldFilm.setDescription(newFilm.getDescription());
+        log.trace("Updated film description");
 
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            log.trace("Updated film release date");
+        oldFilm.setReleaseDate(newFilm.getReleaseDate());
+        log.trace("Updated film release date");
 
-            oldFilm.setDuration(newFilm.getDuration());
-            log.trace("Updated film duration");
-            log.info("Completed a new film update!");
+        oldFilm.setDuration(newFilm.getDuration());
+        log.trace("Updated film duration");
+        log.info("Completed a new film update!");
 
-            return oldFilm;
-        }
-
-        log.warn("Received Film object for updating with missing id = {}", newFilm.getId());
-        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        return oldFilm;
     }
 
     private long getNextId() {
@@ -96,7 +89,7 @@ public class FilmController {
     private static void nullValidateBody(Film film) {
         if (film == null) {
             log.warn("Request has not contain a body of Film-class");
-            throw new NullPointerException("Метод PUT должен передавать объект класса Film");
+            throw new ValidationException("Метод PUT должен передавать объект класса Film");
         }
     }
 

@@ -34,7 +34,7 @@ class FilmorateApplicationTests {
                 "Дата релиза для теста д.б. не раньше 28 декабря 1895 года");
         assertTrue(film.getDuration() > 0, "Продолжительность фильма д.б. положительным числом");
 
-        filmController.add(film);
+        filmController.create(film);
 
         assertEquals(1, filmController.findAll().size(), "Контроллер не добавил фильм, соответствующий " +
                 "критериям проверки");
@@ -51,7 +51,7 @@ class FilmorateApplicationTests {
         assertTrue(film1.getName().isBlank() || film1.getName().isEmpty());
 
         try {
-            filmController.add(film1);
+            filmController.create(film1);
             assertNotEquals(1, filmController.findAll().size(), "Контроллер пропустил " +
                     "фильм с пустым названием (blank)");
         } catch (ValidationException e) {
@@ -67,7 +67,7 @@ class FilmorateApplicationTests {
         assertNull(film2.getName());
 
         try {
-            filmController.add(film2);
+            filmController.create(film2);
             assertNotEquals(1, filmController.findAll().size(), "Контроллер пропустил " +
                     "фильм без названия (null)");
         } catch (ValidationException e) {
@@ -88,7 +88,7 @@ class FilmorateApplicationTests {
         assertTrue(film.getDescription().length() > 200);
 
         try {
-            filmController.add(film);
+            filmController.create(film);
             assertNotEquals(1, filmController.findAll().size(), "Контроллер пропустил фильм " +
                     "с длиной описания более 200 символов");
         } catch (ValidationException e) {
@@ -108,7 +108,7 @@ class FilmorateApplicationTests {
         assertTrue(film.getReleaseDate().isBefore(LocalDate.of(1985, 12, 28)));
 
         try {
-            filmController.add(film);
+            filmController.create(film);
             assertNotEquals(1, filmController.findAll().size(), "Контроллер пропустил фильм " +
                     "с датой релиза раньше 28 декабря 1895 года");
         } catch (ValidationException e) {
@@ -128,7 +128,7 @@ class FilmorateApplicationTests {
         assertTrue(film.getDuration() < 0);
 
         try {
-            filmController.add(film);
+            filmController.create(film);
             assertNotEquals(1, filmController.findAll().size(), "Контроллер пропустил фильм, " +
                     "у которого продолжительность - отрицательное число");
         } catch (ValidationException e) {

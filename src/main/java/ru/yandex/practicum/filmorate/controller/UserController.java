@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -60,45 +59,38 @@ public class UserController {
             throw new ValidationException("Id должен быть указан");
         }
 
-        if (users.containsKey(newUser.getId())) {
-            log.trace("Received User object with correct id");
+        log.trace("Received User object with correct id");
 
-            generalUserValidate(newUser);
-            log.trace("Completed User object general validation for update");
+        generalUserValidate(newUser);
+        log.trace("Completed User object general validation for update");
 
-            List<String> userEmails = users.values().stream()
-                    .map(User::getEmail)
-                    .toList();
-            log.trace("Got list of User emails to check for duplicate");
+        List<String> userEmails = users.values().stream().map(User::getEmail).toList();
+        log.trace("Got list of User emails to check for duplicate");
 
-            if (userEmails.contains(newUser.getEmail())) {
-                log.warn("Received User object with email {} which is already taken by another user", newUser.getEmail());
-                throw new ValidationException("Этот email уже используется");
-            }
-
-            User oldUser = users.get(newUser.getId());
-            log.trace("Got User object for update");
-
-            oldUser.setEmail(newUser.getEmail());
-            log.trace("Updated user name");
-
-            oldUser.setLogin(newUser.getLogin());
-            log.trace("Updated user email");
-
-            oldUser.setName(newUser.getName());
-            log.trace("Updated user name");
-
-            oldUser.setBirthday(newUser.getBirthday());
-            log.trace("Updated user birthday");
-
-            validateNameAndSetLoginAsName(oldUser);
-            log.trace("Completed User object name validation for update");
-
-            return oldUser;
+        if (userEmails.contains(newUser.getEmail())) {
+            log.warn("Received User object with email {} which is already taken by another user", newUser.getEmail());
+            throw new ValidationException("Этот email уже используется");
         }
 
-        log.warn("Received User object for updating with missing id = {}", newUser.getId());
-        throw new NotFoundException("Юзер с id = " + newUser.getId() + " не найден");
+        User oldUser = users.get(newUser.getId());
+        log.trace("Got User object for update");
+
+        oldUser.setEmail(newUser.getEmail());
+        log.trace("Updated user name");
+
+        oldUser.setLogin(newUser.getLogin());
+        log.trace("Updated user email");
+
+        oldUser.setName(newUser.getName());
+        log.trace("Updated user name");
+
+        oldUser.setBirthday(newUser.getBirthday());
+        log.trace("Updated user birthday");
+
+        validateNameAndSetLoginAsName(oldUser);
+        log.trace("Completed User object name validation for update");
+
+        return oldUser;
     }
 
     private long getNextId() {
@@ -113,7 +105,7 @@ public class UserController {
     private static void nullValidateBody(User user) {
         if (user == null) {
             log.warn("Request has not contain a body of User-class");
-            throw new NullPointerException("Метод PUT должен передавать объект класса User");
+            throw new ValidationException("Метод PUT должен передавать объект класса User");
         }
     }
 
