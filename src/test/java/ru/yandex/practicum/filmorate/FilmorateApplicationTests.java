@@ -102,10 +102,10 @@ class FilmorateApplicationTests {
         Film film = new Film();
         film.setName("Tittle");
         film.setDescription("Description with more than 200 chars");
-        film.setReleaseDate(LocalDate.of(1985, 12, 27));
+        film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(120L);
 
-        assertTrue(film.getReleaseDate().isBefore(LocalDate.of(1985, 12, 28)));
+        assertTrue(film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28)));
 
         try {
             filmController.create(film);
