@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,35 +21,26 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-        return films.values();
+        return new ArrayList<>(films.values());
     }
 
     @PostMapping
     public Film create(@RequestBody Film film) {
-        log.info("Starting a new film add!");
 
         nullValidateBody(film);
-        log.trace("Completed Film object validation for the null value for adding");
-
         generalFilmValidate(film);
-        log.trace("Completed Film object validation for add");
 
         film.setId(getNextId());
-        log.trace("Has been set new id = {} to new Film object", film.getId());
-
         films.put(film.getId(), film);
-        log.trace("Added new film \"{}\"", film.getName());
-        log.info("Completed a new film add!");
 
+        log.info("Completed a new film add with the necessary parameters!");
         return film;
     }
 
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
-        log.info("Starting film update!");
 
         nullValidateBody(newFilm);
-        log.trace("Completed Film object validation for the null value for updating");
 
         if (newFilm.getId() == null) {
             log.warn("Received Film object for updating without id");
@@ -56,24 +48,14 @@ public class FilmController {
         }
 
         generalFilmValidate(newFilm);
-        log.trace("Completed Film object validation for update");
 
         Film oldFilm = films.get(newFilm.getId());
-        log.trace("Received Film object for update");
-
         oldFilm.setName(newFilm.getName());
-        log.trace("Updated film name");
-
         oldFilm.setDescription(newFilm.getDescription());
-        log.trace("Updated film description");
-
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
-        log.trace("Updated film release date");
-
         oldFilm.setDuration(newFilm.getDuration());
-        log.trace("Updated film duration");
-        log.info("Completed a new film update!");
 
+        log.info("Completed a new film update with the necessary parameters!");
         return oldFilm;
     }
 
