@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/users")
@@ -21,75 +18,50 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        return users.values();
+        return new ArrayList<>(users.values());
     }
 
     @PostMapping
     public User create(@RequestBody User user) {
-        log.info("Starting a new user create!");
 
         nullValidateBody(user);
-        log.trace("Completed User object validation for the null value for creating");
-
         generalUserValidate(user);
-        log.trace("Completed User object general validation for create");
 
         user.setId(getNextId());
-        log.trace("Has been set new id = {} to new User object", user.getId());
-
         validateNameAndSetLoginAsName(user);
-        log.trace("Completed User object name validation for create");
-
         users.put(user.getId(), user);
-        log.trace("Created new user with login \"{}\"", user.getLogin());
-        log.info("Completed a new user create!");
 
+        log.info("Completed a new user create with the necessary parameters!");
         return user;
     }
 
     @PutMapping
     public User update(@RequestBody User newUser) {
-        log.info("Starting user update!");
 
         nullValidateBody(newUser);
-        log.trace("Completed User object validation for the null value for updating");
 
         if (newUser.getId() == null) {
             log.warn("Received User object for updating without id");
             throw new ValidationException("Id должен быть указан");
         }
 
-        log.trace("Received User object with correct id");
-
         generalUserValidate(newUser);
-        log.trace("Completed User object general validation for update");
 
         List<String> userEmails = users.values().stream().map(User::getEmail).toList();
-        log.trace("Got list of User emails to check for duplicate");
-
         if (userEmails.contains(newUser.getEmail())) {
             log.warn("Received User object with email {} which is already taken by another user", newUser.getEmail());
             throw new ValidationException("Этот email уже используется");
         }
 
         User oldUser = users.get(newUser.getId());
-        log.trace("Got User object for update");
-
         oldUser.setEmail(newUser.getEmail());
-        log.trace("Updated user name");
-
         oldUser.setLogin(newUser.getLogin());
-        log.trace("Updated user email");
-
         oldUser.setName(newUser.getName());
-        log.trace("Updated user name");
-
         oldUser.setBirthday(newUser.getBirthday());
-        log.trace("Updated user birthday");
 
         validateNameAndSetLoginAsName(oldUser);
-        log.trace("Completed User object name validation for update");
 
+        log.info("Completed user update with the necessary parameters!");
         return oldUser;
     }
 
