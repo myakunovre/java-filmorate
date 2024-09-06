@@ -1,77 +1,72 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
 
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> findAll() {
-        return new ArrayList<>(users.values());
+        return userService.findAll();
     }
 
     @PostMapping
     public User create(@RequestBody User user) {
-
         nullValidateBody(user);
         generalUserValidate(user);
-
-        user.setId(getNextId());
-        validateNameAndSetLoginAsName(user);
-        users.put(user.getId(), user);
-
-        log.info("Completed a new user create with the necessary parameters!");
-        return user;
+        return userService.create(user);
     }
 
     @PutMapping
     public User update(@RequestBody User newUser) {
-
         nullValidateBody(newUser);
-
         if (newUser.getId() == null) {
             log.warn("Received User object for updating without id");
             throw new ValidationException("Id должен быть указан");
         }
-
         generalUserValidate(newUser);
-
-        List<String> userEmails = users.values().stream().map(User::getEmail).toList();
-        if (userEmails.contains(newUser.getEmail())) {
-            log.warn("Received User object with email {} which is already taken by another user", newUser.getEmail());
-            throw new ValidationException("Этот email уже используется");
-        }
-
-        User oldUser = users.get(newUser.getId());
-        oldUser.setEmail(newUser.getEmail());
-        oldUser.setLogin(newUser.getLogin());
-        oldUser.setName(newUser.getName());
-        oldUser.setBirthday(newUser.getBirthday());
-
-        validateNameAndSetLoginAsName(oldUser);
-
-        log.info("Completed user update with the necessary parameters!");
-        return oldUser;
+        return userService.update(newUser);
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public Collection<User> addFriend(@PathVariable long id,
+                                      @PathVariable long friendId) {
+        return userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public Collection<User> removeFriend(@PathVariable long id,
+                                         @PathVariable long friendId) {
+        return userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> findFriends(@PathVariable long id) {
+        return userService.findUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> findCommonFriends(@PathVariable long id,
+                                              @PathVariable long otherId) {
+        return userService.findCommonFriends(id, otherId);
     }
 
     private static void nullValidateBody(User user) {
@@ -100,15 +95,6 @@ public class UserController {
                     user.getBirthday().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
                     LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
             throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-    }
-
-    private static void validateNameAndSetLoginAsName(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.trace("Received User object without name, setting login {} as user name", user.getLogin());
-
-            user.setName(user.getLogin());
-            log.trace("Received login \"{}\" as user name for user with id = {}", user.getLogin(), user.getId());
         }
     }
 }
