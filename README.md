@@ -101,14 +101,32 @@ WHERE user_id = {userId};
 
 ### 3. Найти друзей пользователя  
 
-**findFriends(long userI d)**
+**findFriends(long userId)**
 ```
-в работе
+SELECT u2.*
+FROM user AS u1
+JOIN friends AS f ON u1.user_id = f.friend1_id
+JOIN user AS u2 ON f.friend2_id = u2.user_id
+JOIN friends_status AS s ON f.status_id = s.status_id
+WHERE u1.useer_id = {userId} AND s.status = 'accepted';
 ```
 
 ### 4. Найти общих друзей двух пользователей  
 
-**findCommonFriends(long id, long otherId)**
+**findCommonFriends(long userId, long otherId)**
 ```
-в работе
+SELECT u2.*
+FROM user AS u1
+JOIN friends AS f ON u1.user_id = f.friend1_id
+JOIN user AS u2 ON f.friend2_id = u2.user_id
+JOIN friends_status AS s ON f.status_id = s.status_id
+WHERE u1.user_id = {userId} 
+      AND s.status = 'accepted'
+      AND u2.user_id IN (SELECT ou2.id
+                    FROM user AS ou1
+                    JOIN friends AS of ON ou1.user_id = of.friend1_id
+                    JOIN user AS ou2 ON of.friend2_id = ou2.user_id
+                    JOIN status AS os ON of.status_id = os.status_id
+                    WHERE ou1.user_id = {otherId} 
+                          AND os.status = 'accepted');
 ```
