@@ -2,7 +2,6 @@
 Template repository for Filmorate project.
 
 ## Схема базы данных
-
 ![image](src/main/resources/Filmorate.png)
 
 ## Описание таблиц:
