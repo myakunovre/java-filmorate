@@ -2,44 +2,76 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.UserRepository;
+import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
 
-    public final UserStorage inMemoryUserStorage;
+    private final UserRepository userRepository;
 
-    public Collection<User> findAll() {
-        return inMemoryUserStorage.findAll();
+    public List<UserDto> findAll() {
+        return userRepository.findAll().stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
 
-    public User create(User user) {
-        return inMemoryUserStorage.create(user);
+    public UserDto findById(long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+
+        return UserMapper.mapToUserDto(user);
     }
 
-    public User update(User newUser) throws ValidationException {
-        return inMemoryUserStorage.update(newUser);
+    public UserDto create(User user) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new ConditionsNotMetException("Имейл должен быть указан");
+        }
+
+        Optional<User> alreadyExistUser = userRepository.findByEmail(user.getEmail());
+        if (alreadyExistUser.isPresent()) {
+            throw new DuplicatedDataException("Данный имейл уже используется");
+        }
+        User user1 = userRepository.create(user);
+
+        return UserMapper.mapToUserDto(user1);
     }
 
-    public Collection<User> addFriend(Long id, Long friendId) throws NotFoundException {
-        return inMemoryUserStorage.addFriend(id, friendId);
+    public UserDto update(User newUser) {
+        User user = userRepository.update(newUser);
+        return UserMapper.mapToUserDto(user);
     }
 
-    public Collection<User> removeFriend(Long id, Long friendId) throws NotFoundException {
-        return inMemoryUserStorage.removeFriend(id, friendId);
+    public List<UserDto> addFriend(Long userId, Long friendId) {
+        return userRepository.addFriend(userId, friendId).stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
 
-    public Collection<User> findUserFriends(long userId) throws NotFoundException {
-        return inMemoryUserStorage.findUserFriends(userId);
+    public List<UserDto> removeFriend(Long userId, Long friendId) {
+        return userRepository.removeFriend(userId, friendId).stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
 
-    public Collection<User> findCommonFriends(long id, long otherId) throws NotFoundException {
-        return inMemoryUserStorage.findCommonFriends(id, otherId);
+    public List<UserDto> findUserFriends(long userId) {
+        return userRepository.findUserFriends(userId).stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
+    }
+
+    public List<UserDto> findCommonFriends(long user1Id, long user2Id) {
+        return userRepository.findCommonFriends(user1Id, user2Id).stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
 }

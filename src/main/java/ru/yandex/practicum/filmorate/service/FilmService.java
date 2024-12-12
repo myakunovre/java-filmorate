@@ -2,43 +2,116 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.GenreRepository;
+import ru.yandex.practicum.filmorate.dal.RatingRepository;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class FilmService {
 
-    public final FilmStorage inMemoryFilmStorage;
+    private final FilmRepository filmRepository;
+    private final RatingRepository ratingRepository;
+    private final GenreRepository genreRepository;
 
-    public Collection<Film> findAll() {
-        return inMemoryFilmStorage.findAll();
+    public Collection<FilmDto> findAll() {
+        return filmRepository.findAll().stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 
-    public Film create(Film film) {
-        return inMemoryFilmStorage.create(film);
+    public FilmDto findById(long filmId) {
+        Film film = filmRepository.findById(filmId)
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
+
+        Rating mpa = getRating(film);
+        film.setMpa(mpa);
+
+        List<Genre> genres = genreRepository.findByFilmId(filmId);
+
+        if (genres.isEmpty()) {
+            return FilmMapper.mapToFilmDto(film);
+        }
+
+        film.setGenres(genres);
+
+        return FilmMapper.mapToFilmDto(film);
     }
 
-    public Film update(Film newFilm) {
-        return inMemoryFilmStorage.update(newFilm);
+    public FilmDto create(Film newFilm) {
+        Rating mpa = getRating(newFilm);
+
+        List<Genre> genres = null;
+        if (newFilm.getGenres() != null) {
+            genres = getGenres(newFilm);
+        }
+
+        Film film = FilmMapper.mapToFilm(newFilm, mpa, genres);
+        Film filmWithID = filmRepository.create(film);
+
+        return FilmMapper.mapToFilmDto(filmWithID);
     }
 
-    public Film addLike(long id, long userId) throws NotFoundException {
+    public FilmDto update(Film updateFilm) {
+        filmRepository.update(updateFilm);
+        Film film = filmRepository.findById(updateFilm.getId()).get();
 
-        return inMemoryFilmStorage.addLike(id, userId);
+        return FilmMapper.mapToFilmDto(film);
     }
 
-    public Film removeLike(long id, long userId) throws NotFoundException {
+    public FilmDto addLike(long filmId, long userId) {
+        Film film = filmRepository.addLike(filmId, userId);
 
-        return inMemoryFilmStorage.removeLike(id, userId);
+        return FilmMapper.mapToFilmDto(film);
     }
 
-    public List<Film> getPopular(int count) {
+    public FilmDto removeLike(long id, long userId) {
+        Film film = filmRepository.removeLike(id, userId);
 
-        return inMemoryFilmStorage.getPopular(count);
+        return FilmMapper.mapToFilmDto(film);
+    }
+
+    public List<FilmDto> getPopular(int count) {
+        return filmRepository.getPopular(count).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    private Rating getRating(Film film) {
+        Rating mpa = ratingRepository.findById(film.getMpa().getId())
+                .orElseThrow(() -> new ValidationException("MPA с id = " + film.getMpa().getId() + " не найден"));
+        return mpa;
+    }
+
+    private List<Genre> getGenres(Film film) {
+        List<Genre> genres = film.getGenres()
+                .stream()
+                .map(genreDto -> genreRepository.findById(genreDto.getId())
+                        .orElseThrow(() -> new ValidationException("Жанр с id = " + genreDto.getId() + " не найден")))
+                .collect(Collectors.toMap(Genre::getId, genre -> genre, (existing, replacement) -> existing)) // Убираем дубликаты
+                .values()
+                .stream()
+                .toList();
+        return genres;
+    }
+
+    private List<Genre> getGenresByFilmId(Film film) {
+        List<Genre> genres = film.getGenres()
+                .stream()
+                .map(genreDto -> genreRepository.findById(genreDto.getId())
+                        .orElseThrow(() -> new ValidationException("Жанр с id = " + genreDto.getId() + " не найден")))
+                .toList();
+        return genres;
     }
 }
