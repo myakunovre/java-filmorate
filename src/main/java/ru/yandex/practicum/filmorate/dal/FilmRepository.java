@@ -38,8 +38,9 @@ public class FilmRepository {
     }
 
     public Film create(Film film) {
-        String sql1 = "INSERT INTO films(name, description, release_date, duration, rating_id) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String sql1 = """
+                INSERT INTO films(name, description, release_date, duration, rating_id) 
+                VALUES (?, ?, ?, ?, ?)""";
         long filmId = insert(
                 sql1,
                 film.getName(),
@@ -55,8 +56,9 @@ public class FilmRepository {
             return film;
         }
 
-        String sql2 = "INSERT INTO film_genre(film_id, genre_id) " +
-                "VALUES (?, ?)";
+        String sql2 = """
+                INSERT INTO film_genre(film_id, genre_id) 
+                VALUES (?, ?)""";
 
         List<Integer> genreIds = film.getGenres()
                 .stream()
@@ -72,8 +74,10 @@ public class FilmRepository {
     public Film update(Film film) {
         validateNotFound(film.getId());
 
-        String sqlUpdate = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, " +
-                "rating_id = ? WHERE id = ?";
+        String sqlUpdate = """
+                UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? 
+                WHERE id = ?""";
+
         update(
                 sqlUpdate,
                 film.getName(),
@@ -103,12 +107,13 @@ public class FilmRepository {
     }
 
     public List<Film> getPopular(int count) {
-        String sql = "SELECT F.* " +
-                "FROM PUBLIC.FILMS F " +
-                "LEFT JOIN PUBLIC.LIKES L ON F.ID = L.FILM_ID " +
-                "GROUP BY F.ID, F.NAME " +
-                "ORDER BY COUNT(L.USER_ID) DESC " +
-                "LIMIT ?";
+        String sql = """
+                SELECT F.* 
+                FROM PUBLIC.FILMS F 
+                LEFT JOIN PUBLIC.LIKES L ON F.ID = L.FILM_ID 
+                GROUP BY F.ID, F.NAME 
+                ORDER BY COUNT(L.USER_ID) DESC 
+                LIMIT ?""";
         return jdbc.query(sql, mapper, count);
     }
 

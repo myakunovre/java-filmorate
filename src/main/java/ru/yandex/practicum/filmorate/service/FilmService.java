@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -95,23 +94,20 @@ public class FilmService {
     }
 
     private List<Genre> getGenres(Film film) {
-        List<Genre> genres = film.getGenres()
-                .stream()
-                .map(genreDto -> genreRepository.findById(genreDto.getId())
-                        .orElseThrow(() -> new ValidationException("Жанр с id = " + genreDto.getId() + " не найден")))
-                .collect(Collectors.toMap(Genre::getId, genre -> genre, (existing, replacement) -> existing)) // Убираем дубликаты
-                .values()
-                .stream()
+        List<Integer> filmGenreIds = film.getGenres().stream()
+                .map(Genre::getId)
                 .toList();
-        return genres;
-    }
 
-    private List<Genre> getGenresByFilmId(Film film) {
-        List<Genre> genres = film.getGenres()
-                .stream()
-                .map(genreDto -> genreRepository.findById(genreDto.getId())
-                        .orElseThrow(() -> new ValidationException("Жанр с id = " + genreDto.getId() + " не найден")))
+        List<Integer> allGenreIds = genreRepository.findAll().stream()
+                .map(Genre::getId)
                 .toList();
-        return genres;
+
+        filmGenreIds.stream()
+                .filter(filmGenreId -> !allGenreIds.contains(filmGenreId))
+                .forEach(filmGenreId -> {
+                    throw new ValidationException("Жанр с id = " + filmGenreId + " не найден");
+                });
+
+        return genreRepository.findByIds(filmGenreIds);
     }
 }
