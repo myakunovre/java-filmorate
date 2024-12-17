@@ -108,11 +108,11 @@ public class FilmRepository {
 
     public List<Film> getPopular(int count) {
         String sql = """
-                SELECT F.* 
-                FROM PUBLIC.FILMS F 
-                LEFT JOIN PUBLIC.LIKES L ON F.ID = L.FILM_ID 
-                GROUP BY F.ID, F.NAME 
-                ORDER BY COUNT(L.USER_ID) DESC 
+                SELECT F.*
+                FROM PUBLIC.FILMS F
+                LEFT JOIN PUBLIC.LIKES L ON F.ID = L.FILM_ID
+                GROUP BY F.ID, F.NAME
+                ORDER BY COUNT(L.USER_ID) DESC
                 LIMIT ?""";
         return jdbc.query(sql, mapper, count);
     }
