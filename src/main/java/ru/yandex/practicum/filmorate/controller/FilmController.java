@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -21,48 +23,57 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public Collection<Film> findAll() {
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<FilmDto> findAll() {
         return filmService.findAll();
     }
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto findById(@PathVariable int id) {
+        return filmService.findById(id);
+    }
+
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public FilmDto create(@RequestBody Film newFilm) {
 
-        nullValidateBody(film);
-        generalFilmValidate(film);
+        nullValidateBody(newFilm);
+        generalFilmValidate(newFilm);
 
-        return filmService.create(film);
+        return filmService.create(newFilm);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
+    public FilmDto update(@RequestBody Film updateFilm) {
 
-        nullValidateBody(newFilm);
+        nullValidateBody(updateFilm);
 
-        if (newFilm.getId() == null) {
+        if (updateFilm.getId() == null) {
             log.warn("Received Film object for updating without id");
             throw new ValidationException("Id должен быть указан");
         }
 
-        generalFilmValidate(newFilm);
+        generalFilmValidate(updateFilm);
 
-        return filmService.update(newFilm);
+        return filmService.update(updateFilm);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable long id,
+    public FilmDto addLike(@PathVariable long id,
                         @PathVariable long userId) {
         return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film removeLike(@PathVariable long id,
+    public FilmDto removeLike(@PathVariable long id,
                            @PathVariable long userId) {
         return filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
+    @ResponseStatus(HttpStatus.OK)
+    public List<FilmDto> getPopular(@RequestParam(defaultValue = "10") int count) {
         if (count < 0) {
             throw new ValidationException("Параметр count не может быть отрицательным числом, а у Вас count = " + count);
         }

@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -20,47 +22,56 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public Collection<User> findAll() {
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> findAll() {
         return userService.findAll();
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto create(@RequestBody User user) {
+
         nullValidateBody(user);
         generalUserValidate(user);
+
         return userService.create(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
-        nullValidateBody(newUser);
-        if (newUser.getId() == null) {
+    public UserDto update(@RequestBody User updateUser) {
+        nullValidateBody(updateUser);
+
+        if (updateUser.getId() == null) {
             log.warn("Received User object for updating without id");
             throw new ValidationException("Id должен быть указан");
         }
-        generalUserValidate(newUser);
-        return userService.update(newUser);
+
+        generalUserValidate(updateUser);
+
+        return userService.update(updateUser);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public Collection<User> addFriend(@PathVariable long id,
+    public Collection<UserDto> addFriend(@PathVariable long id,
                                       @PathVariable long friendId) {
         return userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public Collection<User> removeFriend(@PathVariable long id,
+    public Collection<UserDto> removeFriend(@PathVariable long id,
                                          @PathVariable long friendId) {
         return userService.removeFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> findFriends(@PathVariable long id) {
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> findFriends(@PathVariable long id) {
         return userService.findUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> findCommonFriends(@PathVariable long id,
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> findCommonFriends(@PathVariable long id,
                                               @PathVariable long otherId) {
         return userService.findCommonFriends(id, otherId);
     }
