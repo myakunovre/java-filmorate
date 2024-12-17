@@ -30,9 +30,9 @@ public class GenreRepository {
 
     public List<Genre> findByFilmId(long filmId) {
         String sql = """
-                SELECT g.* 
-                FROM film_genre fg 
-                LEFT JOIN genres g ON fg.genre_id = g.id 
+                SELECT g.*
+                FROM film_genre fg
+                LEFT JOIN genres g ON fg.genre_id = g.id
                 WHERE fg.film_id = ?""";
         List<Genre> genres = jdbc.query(sql, mapper, filmId);
         return genres;
