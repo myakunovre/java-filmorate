@@ -39,7 +39,7 @@ public class FilmRepository {
 
     public Film create(Film film) {
         String sql1 = """
-                INSERT INTO films(name, description, release_date, duration, rating_id) 
+                INSERT INTO films(name, description, release_date, duration, rating_id)
                 VALUES (?, ?, ?, ?, ?)""";
         long filmId = insert(
                 sql1,
@@ -57,7 +57,7 @@ public class FilmRepository {
         }
 
         String sql2 = """
-                INSERT INTO film_genre(film_id, genre_id) 
+                INSERT INTO film_genre(film_id, genre_id)
                 VALUES (?, ?)""";
 
         List<Integer> genreIds = film.getGenres()
@@ -75,7 +75,7 @@ public class FilmRepository {
         validateNotFound(film.getId());
 
         String sqlUpdate = """
-                UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? 
+                UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ?
                 WHERE id = ?""";
 
         update(

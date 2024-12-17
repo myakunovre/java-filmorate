@@ -95,10 +95,10 @@ public class UserRepository {
 
     public List<User> findCommonFriends(long userId, long friendId) {
         String sql = """
-                SELECT u.* FROM PUBLIC.USERS u 
-                JOIN PUBLIC.FRIENDS f1 ON u.ID = f1.FRIEND_ID 
-                JOIN PUBLIC.FRIENDS f2 ON u.ID = f2.FRIEND_ID 
-                WHERE f1.USER_ID = ? 
+                SELECT u.* FROM PUBLIC.USERS u
+                JOIN PUBLIC.FRIENDS f1 ON u.ID = f1.FRIEND_ID
+                JOIN PUBLIC.FRIENDS f2 ON u.ID = f2.FRIEND_ID
+                WHERE f1.USER_ID = ?
                 AND f2.USER_ID = ?""";
         return jdbc.query(sql, mapper, userId, friendId);
     }
