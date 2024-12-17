@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.UserRepository;
 import ru.yandex.practicum.filmorate.dto.UserDto;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -41,14 +43,20 @@ public class UserService {
         if (alreadyExistUser.isPresent()) {
             throw new DuplicatedDataException("Данный имейл уже используется");
         }
-        User user1 = userRepository.create(user);
 
-        return UserMapper.mapToUserDto(user1);
+        User user1 = validateNameAndSetLoginAsName(user);
+
+        User user2 = userRepository.create(user);
+
+        return UserMapper.mapToUserDto(user2);
     }
 
     public UserDto update(User newUser) {
-        User user = userRepository.update(newUser);
-        return UserMapper.mapToUserDto(user);
+        userRepository.findById(newUser.getId())
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        User updatedUser = userRepository.update(newUser);
+        return UserMapper.mapToUserDto(updatedUser);
     }
 
     public List<UserDto> addFriend(Long userId, Long friendId) {
@@ -73,5 +81,15 @@ public class UserService {
         return userRepository.findCommonFriends(user1Id, user2Id).stream()
                 .map(UserMapper::mapToUserDto)
                 .toList();
+    }
+
+    private static User validateNameAndSetLoginAsName(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.trace("Received User object without name, setting login {} as user name", user.getLogin());
+
+            user.setName(user.getLogin());
+            log.trace("Received login \"{}\" as user name", user.getLogin());
+        }
+        return user;
     }
 }

@@ -31,21 +31,21 @@ class FilmoRateFilmDBApplicationTests {
 
         assertThat(films).isNotEmpty();
 
-        assertThat(films).hasSize(3);
+        assertThat(films).hasSize(4);
 
-        List<Long> expectedIds = Arrays.asList(2L, 3L, 4L);
+        List<Long> expectedIds = Arrays.asList(10001L, 10002L, 10003L, 10004L);
 
         assertThat(films).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIds);
     }
 
     @Test
     public void testFindFilmById() {
-        Optional<Film> filmOptional = filmRepository.findById(2);
+        Optional<Film> filmOptional = filmRepository.findById(10002);
 
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", 2L)
+                        assertThat(user).hasFieldOrPropertyWithValue("id", 10002L)
                 );
     }
 
@@ -56,8 +56,8 @@ class FilmoRateFilmDBApplicationTests {
 
         Film testFilm = new Film();
 
-        testFilm.setName("Film A");
-        testFilm.setDescription("Description for Film A");
+        testFilm.setName("Film Test");
+        testFilm.setDescription("Description for Film Test");
         testFilm.setReleaseDate(LocalDate.now());
         testFilm.setDuration(180L);
         testFilm.setMpa(mpa);
@@ -70,10 +70,10 @@ class FilmoRateFilmDBApplicationTests {
                 film.getId().equals(1L));
 
         assertThat(films).anyMatch(film ->
-                film.getName().equals("Film A"));
+                film.getName().equals("Film Test"));
 
         assertThat(films).anyMatch(film ->
-                film.getDescription().equals("Description for Film A"));
+                film.getDescription().equals("Description for Film Test"));
 
         assertThat(films).anyMatch(film ->
                 film.getReleaseDate().equals(LocalDate.now()));
@@ -92,7 +92,7 @@ class FilmoRateFilmDBApplicationTests {
 
         Film testFilmUpdate = new Film();
 
-        testFilmUpdate.setId(2L);
+        testFilmUpdate.setId(10002L);
         testFilmUpdate.setName("Film BB");
         testFilmUpdate.setDescription("Description for Film BB");
         testFilmUpdate.setReleaseDate(LocalDate.now());
@@ -101,12 +101,12 @@ class FilmoRateFilmDBApplicationTests {
 
         filmRepository.update(testFilmUpdate);
 
-        Optional<Film> filmOptional = filmRepository.findById(2L);
+        Optional<Film> filmOptional = filmRepository.findById(10002L);
 
         AssertionsForClassTypes.assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("id", 2L)
+                        AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("id", 10002L)
                 );
 
         AssertionsForClassTypes.assertThat(filmOptional)
@@ -147,16 +147,16 @@ class FilmoRateFilmDBApplicationTests {
 
     @Test
     public void addFilmLike() {
-        filmRepository.addLike(2L, 2L);
-        filmRepository.addLike(2L, 3L);
-        filmRepository.addLike(2L, 4L);
-        filmRepository.addLike(3L, 2L);
-        filmRepository.addLike(3L, 3L);
-        filmRepository.addLike(4L, 2L);
+        filmRepository.addLike(10002L, 10002L);
+        filmRepository.addLike(10002L, 10003L);
+        filmRepository.addLike(10002L, 10004L);
+        filmRepository.addLike(10003L, 10002L);
+        filmRepository.addLike(10003L, 10003L);
+        filmRepository.addLike(10004L, 10002L);
 
         List<Film> likedFilms = filmRepository.getPopular(3);
 
-        List<Long> expectedIds = List.of(4L, 3L, 2L);
+        List<Long> expectedIds = List.of(10004L, 10003L, 10002L);
         assertThat(likedFilms).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIds);
     }
 }

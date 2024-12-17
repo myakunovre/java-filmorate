@@ -33,32 +33,40 @@ class FilmoRateUserDBApplicationTests {
         assertThat(users).isNotEmpty();
 
         // Проверка количества элементов в коллекции
-        assertThat(users).hasSize(5);
+        assertThat(users).hasSize(6);
 
         // Или если ожидаете конкретный список пользователей
-        List<Long> expectedIds = Arrays.asList(2L, 3L, 4L, 5L, 6L);
+        List<Long> expectedIds = Arrays.asList(10001L, 10002L, 10003L, 10004L, 10005L, 10006L);
         assertThat(users).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIds);
     }
 
     @Test
     public void testFindUserById() {
-        Optional<User> userOptional = userRepository.findById(2);
+        Optional<User> userOptional1 = userRepository.findById(10001L);
 
-        assertThat(userOptional)
+        assertThat(userOptional1)
                 .isPresent()
                 .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", 2L)
+                        assertThat(user).hasFieldOrPropertyWithValue("id", 10001L)
+                );
+
+        Optional<User> userOptional2 = userRepository.findById(10002L);
+
+        assertThat(userOptional2)
+                .isPresent()
+                .hasValueSatisfying(user ->
+                        assertThat(user).hasFieldOrPropertyWithValue("id", 10002L)
                 );
     }
 
     @Test
     public void findUserByEmail() {
-        Optional<User> userOptional = userRepository.findByEmail("user2@example.com");
+        Optional<User> userOptional = userRepository.findByEmail("user10001@example.com");
 
         assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", 2L)
+                        assertThat(user).hasFieldOrPropertyWithValue("id", 10001L)
                 );
     }
 
@@ -94,41 +102,41 @@ class FilmoRateUserDBApplicationTests {
     public void updateUser() {
         User testUserUpdate = new User();
 
-        testUserUpdate.setId(2L);
-        testUserUpdate.setEmail("user02@example.com");
-        testUserUpdate.setLogin("user02");
-        testUserUpdate.setName("User ZeroTwo");
+        testUserUpdate.setId(10001L);
+        testUserUpdate.setEmail("user10001update@example.com");
+        testUserUpdate.setLogin("user1update");
+        testUserUpdate.setName("User One Update");
         testUserUpdate.setBirthday(LocalDate.now());
 
         userRepository.update(testUserUpdate);
 
-        Optional<User> userOptional = userRepository.findById(2);
+        Optional<User> userOptional = userRepository.findById(10001L);
 
         AssertionsForClassTypes.assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("id", 2L)
+                        AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("id", 10001L)
                 );
 
         AssertionsForClassTypes.assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
                         AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("email",
-                                "user02@example.com")
+                                "user10001update@example.com")
                 );
 
         AssertionsForClassTypes.assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
                         AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("login",
-                                "user02")
+                                "user1update")
                 );
 
         AssertionsForClassTypes.assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
                         AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("name",
-                                "User ZeroTwo")
+                                "User One Update")
                 );
 
         AssertionsForClassTypes.assertThat(userOptional)
@@ -142,101 +150,102 @@ class FilmoRateUserDBApplicationTests {
     @Test
     public void addFriend() {
         // запрос друзей юзера 2
-        List<User> friendsOfUserTwo = userRepository.findUserFriends(2L);
+        List<User> friendsOfUserTwo = userRepository.findUserFriends(10002L);
 
         // убеждаемся, что их нет
         List<Long> expectedNoIds = List.of();
         assertThat(friendsOfUserTwo).extracting("id").containsExactlyInAnyOrderElementsOf(expectedNoIds);
 
         // добавим юзеру 2 двух друзей с id = 3 и 4
-        userRepository.addFriend(2L, 3L);
-        userRepository.addFriend(2L, 4L);
+        userRepository.addFriend(10002L, 10003L);
+        userRepository.addFriend(10002L, 10004L);
 
         // убеждаемся, что они появились
-        List<User> twoFriends = userRepository.findUserFriends(2L);
+        List<User> twoFriends = userRepository.findUserFriends(10002L);
 
         // ожидаем конкретный список пользователей
-        List<Long> expectedIdsAfterAdd = Arrays.asList(3L, 4L);
+        List<Long> expectedIdsAfterAdd = Arrays.asList(10003L, 10004L);
         assertThat(twoFriends).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIdsAfterAdd);
     }
 
     @Test
     public void removeFriend() {
         // запрос друзей юзера 2
-        List<User> friendsOfUserTwo = userRepository.findUserFriends(2L);
+        List<User> friendsOfUserTwo = userRepository.findUserFriends(10002L);
 
         // убеждаемся, что их нет
         List<Long> expectedNoIds = List.of();
         assertThat(friendsOfUserTwo).extracting("id").containsExactlyInAnyOrderElementsOf(expectedNoIds);
 
         // добавим юзеру 2 двух друзей с id = 3 и 4
-        userRepository.addFriend(2L, 3L);
-        userRepository.addFriend(2L, 4L);
+        userRepository.addFriend(10002L, 10003L);
+        userRepository.addFriend(10002L, 10004L);
 
         // убеждаемся, что они появились
-        List<User> twoFriends = userRepository.findUserFriends(2L);
+        List<User> twoFriends = userRepository.findUserFriends(10002L);
 
-        List<Long> expectedIds = List.of(3L, 4L);
-        assertThat(twoFriends).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIds);
+        // ожидаем конкретный список пользователей
+        List<Long> expectedIdsAfterAdd = Arrays.asList(10003L, 10004L);
+        assertThat(twoFriends).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIdsAfterAdd);
 
-        //  удаляем юзера с id = 4
-        List<User> oneFriend = userRepository.removeFriend(2L, 4L);
+        //  удаляем юзера с id = 10004L
+        List<User> oneFriend = userRepository.removeFriend(10002L, 10004L);
 
         //  убеждаемся, что остался только юзер с id = 3
-        List<Long> expectedIdsAfterDel = List.of(3L);
+        List<Long> expectedIdsAfterDel = List.of(10003L);
         assertThat(oneFriend).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIdsAfterDel);
     }
 
     @Test
     public void findUserFriends() {
         // запрос друзей юзера 2
-        List<User> friendsOfUserTwo = userRepository.findUserFriends(2L);
+        List<User> friendsOfUserTwo = userRepository.findUserFriends(10002L);
 
         // убеждаемся, что их нет
         List<Long> expectedNoIds = List.of();
         assertThat(friendsOfUserTwo).extracting("id").containsExactlyInAnyOrderElementsOf(expectedNoIds);
 
         // добавим юзеру 2 двух друзей с id = 3 и 4
-        userRepository.addFriend(2L, 3L);
-        userRepository.addFriend(2L, 4L);
+        userRepository.addFriend(10002L, 10003L);
+        userRepository.addFriend(10002L, 10004L);
 
         // получаем список друзей юзера 2 через поиск
-        List<User> findedFriends = userRepository.findUserFriends(2L);
+        List<User> findedFriends = userRepository.findUserFriends(10002L);
 
         //  убеждаемся, что нашлись два друга с id = 3 и 4
-        List<Long> expectedIds = List.of(3L, 4L);
+        List<Long> expectedIds = List.of(10003L, 10004L);
         assertThat(findedFriends).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIds);
     }
 
     @Test
     public void findCommonFriends() {
         // запрос друзей юзера 2
-        List<User> friendsOfUser2 = userRepository.findUserFriends(2L);
+        List<User> friendsOfUser2 = userRepository.findUserFriends(10002L);
 
         // убеждаемся, что их нет
         List<Long> expectedNoIds2 = List.of();
         assertThat(friendsOfUser2).extracting("id").containsExactlyInAnyOrderElementsOf(expectedNoIds2);
 
         // запрос друзей юзера 5
-        List<User> friendsOfUser5 = userRepository.findUserFriends(5L);
+        List<User> friendsOfUser5 = userRepository.findUserFriends(10005L);
 
         // убеждаемся, что их нет
         List<Long> expectedNoIds5 = List.of();
         assertThat(friendsOfUser5).extracting("id").containsExactlyInAnyOrderElementsOf(expectedNoIds5);
 
         // добавим юзеру 2 двух друзей с id = 3 и 4
-        userRepository.addFriend(2L, 3L);
-        userRepository.addFriend(2L, 4L);
+        userRepository.addFriend(10002L, 10003L);
+        userRepository.addFriend(10002L, 10004L);
 
         // добавим юзеру 5 двух друзей с id = 4 и 6
-        userRepository.addFriend(5L, 4L);
-        userRepository.addFriend(5L, 6L);
+        userRepository.addFriend(10005L, 10004L);
+        userRepository.addFriend(10005L, 10006L);
 
         // получаем список общих друзей юзеров 2 и 5
-        List<User> commonFriends = userRepository.findCommonFriends(2L, 5L);
+        List<User> commonFriends = userRepository.findCommonFriends(10002L, 10005L);
 
         //  убеждаемся, что у юзеров 2 и 5 только один общих друг - юзер 4
-        List<Long> expectedIds = List.of(4L);
+        List<Long> expectedIds = List.of(10004L);
         assertThat(commonFriends).extracting("id").containsExactlyInAnyOrderElementsOf(expectedIds);
     }
 }

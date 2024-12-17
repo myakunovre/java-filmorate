@@ -40,23 +40,21 @@ public class UserRepository {
         return jdbc.query(sql, mapper, email).stream().findFirst();
     }
 
-    public User create(User user) {
-        validateNameAndSetLoginAsName(user);
+    public User create(User newUser) {
         String sql = "INSERT INTO users(email, login, name, birthday) VALUES (?, ?, ?, ?)";
 
         long id = insert(
                 sql,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday()
+                newUser.getEmail(),
+                newUser.getLogin(),
+                newUser.getName(),
+                newUser.getBirthday()
         );
-        user.setId(id);
-        return user;
+        newUser.setId(id);
+        return newUser;
     }
 
     public User update(User newUser) {
-        validateNotFound(newUser.getId());
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
 
         update(
@@ -108,7 +106,6 @@ public class UserRepository {
 
     private long insert(String query, Object... params) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbc.update(connection -> {
             PreparedStatement ps = connection
                     .prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -134,13 +131,14 @@ public class UserRepository {
         }
     }
 
-    private static void validateNameAndSetLoginAsName(User user) {
+    private static User validateNameAndSetLoginAsName(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             log.trace("Received User object without name, setting login {} as user name", user.getLogin());
 
             user.setName(user.getLogin());
             log.trace("Received login \"{}\" as user name for user with id = {}", user.getLogin(), user.getId());
         }
+        return user;
     }
 
     private void validateNotFound(long id) {

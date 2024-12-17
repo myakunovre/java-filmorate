@@ -30,20 +30,25 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto create(@RequestBody User user) {
+
         nullValidateBody(user);
         generalUserValidate(user);
+
         return userService.create(user);
     }
 
     @PutMapping
-    public UserDto update(@RequestBody User newUser) {
-        nullValidateBody(newUser);
-        if (newUser.getId() == null) {
+    public UserDto update(@RequestBody User updateUser) {
+        nullValidateBody(updateUser);
+
+        if (updateUser.getId() == null) {
             log.warn("Received User object for updating without id");
             throw new ValidationException("Id должен быть указан");
         }
-        generalUserValidate(newUser);
-        return userService.update(newUser);
+
+        generalUserValidate(updateUser);
+
+        return userService.update(updateUser);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

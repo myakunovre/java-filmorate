@@ -81,7 +81,6 @@ public class FilmRepository {
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getMpa().getId(),
-//                film.getGenres(),
                 film.getId()
         );
 

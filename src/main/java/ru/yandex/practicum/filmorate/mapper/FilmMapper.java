@@ -37,21 +37,7 @@ public final class FilmMapper {
         }
 
         dto.setGenres(film.getGenres());
-//        dto.setMpa(mpa);
-//        dto.setGenres(genres);
+
         return dto;
     }
-
-//    public static User updateUserFields(User user, UpdateUserRequest request) {
-//        if (request.hasEmail()) {
-//            user.setEmail(request.getEmail());
-//        }
-//        if (request.hasPassword()) {
-//            user.setPassword(request.getPassword());
-//        }
-//        if (request.hasUsername()) {
-//            user.setUsername(request.getUsername());
-//        }
-//        return user;
-//    }
 }
